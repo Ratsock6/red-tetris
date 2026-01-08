@@ -1,0 +1,24 @@
+{
+	"name": "red-tetris",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"dev": "concurrently \"npm run dev --prefix client\" \"node server/index.js\""
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Ratsock6/red-tetris.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "commonjs",
+	"bugs": {
+		"url": "https://github.com/Ratsock6/red-tetris/issues"
+	},
+	"homepage": "https://github.com/Ratsock6/red-tetris#readme",
+	"dependencies": {
+		"concurrently": "^9.2.1"
+	}
+}
