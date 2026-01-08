@@ -1,0 +1,23 @@
+- Jeu en entier:
+  - Rotation
+  - Pose instant
+  - les différents blocs
+  - Afficher les prochaines blocs (A voir avec les objs recup)
+  - Prévisualiser là où le bloc actual va se poser
+  
+- Interface
+- Afficher les blocs des autres joueurs
+
+
+Back a transmetre (socket)
+- La position des blocs
+- Score
+- Room + Pseudo
+- lancement de la partie
+
+
+
+Back a recup
+- Recup les blocs des autres joueurs
+- Les prochains blocs
+
