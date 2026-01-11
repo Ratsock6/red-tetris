@@ -4,6 +4,8 @@ class Game {
 	constructor() {
 		this.board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 		this.active = true;
+		this.current_block = 0
+
 	}
 	updateBoard(cells) {
 		for (let r = 0; r < ROWS; r++) {
