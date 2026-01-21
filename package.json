@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"dev": "concurrently \"npm run dev --prefix client\" \"node server/index.js\""
+		"dev": "concurrently \"npm run dev --prefix client\" \"node server/index.js\"",
+		"install-all": "npm install && npm install --prefix client && npm install --prefix server"
 	},
 	"repository": {
 		"type": "git",
