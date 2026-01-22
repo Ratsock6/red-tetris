@@ -2,10 +2,10 @@ export const L_block = [
 	[false, false, true],
 	[true, true, true],
 ];
-export const line_block = [
+export const I_block = [
 	[true, true, true, true],
 ];
-export const RL_block = [
+export const J_block = [
 	[true, false, false],
 	[true, true, true],
 ];
@@ -18,22 +18,22 @@ export const Z_block = [
 	[false, true, true],
 ];
 
-export const RZ_block = [
+export const S_block = [
 	[false, true, true],
 	[true, true, false],
 ];
-export const block_block = [
+export const O_block = [
 	[true, true],
 	[true, true],
 ];
 
 export const BLOCKS = {
 	1: L_block,
-	2: line_block,
-	3: RL_block,
+	2: I_block,
+	3: J_block,
 	4: T_block,
 	5: Z_block,
-	6: RZ_block,
-	7: block_block,
+	6: S_block,
+	7: O_block,
 };
 
