@@ -1,10 +1,10 @@
-import Block from './Block.js';
+import generateBlockList from './Block.js';
 class Room {
 	constructor(id) {
 		this.id = id;
 		this.players = [];
 		this.max_players = 4;
-		this.blocklist = Block.generateBlockList(10000);
+		this.blocklist = generateBlockList(10000);
 		this.gameLoopInterval = null;
 	}
 	addPlayer(player) {
