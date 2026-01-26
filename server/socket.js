@@ -8,11 +8,10 @@ export function initializeSocket(io, rooms) {
 		let player = null;
 		let currentRoom = null;
 
-		socket.on('setPlayerName', (playerName) => {
-			console.log('Player Name:', playerName);
-			player = new Player(socket.id, playerName);
-			player.game.printBoard();
-		});
+	socket.on('setPlayerName', (playerName) => {
+		console.log('Player Name:', playerName);
+		player = new Player(socket.id, playerName, null);
+	});
 
 		socket.on('disconnect', () => {
 			rooms.forEach((room) => {
@@ -29,10 +28,13 @@ export function initializeSocket(io, rooms) {
 				room = new Room(roomId);
 				rooms.set(roomId, room);
 			}
+			// Recreate player with room reference
+			player = new Player(socket.id, player.name, room);
 			if (room.addPlayer(player)) {
 				currentRoom = room;
 				socket.join(roomId);
 				console.log(`Player ${socket.id} joined room ${roomId}`);
+				player.game.printBoard();
 				socket.emit('joinedRoom', roomId);
 			} else {
 				socket.emit('roomFull', roomId);
