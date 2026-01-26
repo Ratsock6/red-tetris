@@ -241,6 +241,11 @@
 			socket.on('connect', () => {
 				addLog('✓ Connected to server', 'received');
 				updateStatus(true);
+				const playerName = document.getElementById('playerName').value;
+				if (playerName) {
+					socket.emit('setPlayerName', playerName);
+					addLog(`✓ Sent player name: ${playerName}`, 'sent');
+				}
 			});
 
 			socket.on('disconnect', () => {
@@ -281,15 +286,14 @@
 
 		function joinRoom() {
 			const roomId = document.getElementById('roomId').value;
-			const playerName = document.getElementById('playerName').value;
 
 			if (!socket || !socket.connected) {
 				addLog('Not connected to server', 'error');
 				return;
 			}
 
-			addLog(`Attempting to join room: ${roomId} as ${playerName}`, 'sent');
-			socket.emit('joinRoom', roomId, playerName);
+			addLog(`Attempting to join room: ${roomId}`, 'sent');
+			socket.emit('joinRoom', roomId);
 		}
 
 		function requestGameInfo() {

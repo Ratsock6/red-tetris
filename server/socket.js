@@ -5,9 +5,14 @@ import Room from './Room.js';
 export function initializeSocket(io, rooms) {
 	io.on('connection', (socket) => {
 		console.log(socket.id, ' connected');
-		const player = new Player(socket.id, 'Jean');
-		player.game.printBoard();
+		let player = null;
 		let currentRoom = null;
+
+		socket.on('setPlayerName', (playerName) => {
+			console.log('Player Name:', playerName);
+			player = new Player(socket.id, playerName);
+			player.game.printBoard();
+		});
 
 		socket.on('disconnect', () => {
 			rooms.forEach((room) => {
@@ -16,7 +21,7 @@ export function initializeSocket(io, rooms) {
 			console.log(socket.id, ' disconnected');
 		});
 
-		socket.on('joinRoom', (roomId, PlayerName) => {
+		socket.on('joinRoom', (roomId) => {
 			let room;
 			if (rooms.has(roomId)) {
 				room = rooms.get(roomId);
@@ -38,7 +43,8 @@ export function initializeSocket(io, rooms) {
 		socket.on('Gameinfo', () => {
 			console.log('Game info requested');
 			if (currentRoom) {
-				console.log(currentRoom.Get_all_players_info());
+				socket.emit('gameinfo', currentRoom.Get_all_players_info());
+				console.log('Game info sent');
 			}
 		});
 	});
