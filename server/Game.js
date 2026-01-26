@@ -29,6 +29,9 @@ class Game {
 	printBoard() {
 		console.log(this.board.map(row => row.join(' ')).join('\n'));
 	}
+	GetBoard() {
+		return this.board;
+	}
 
 }
 export default Game;

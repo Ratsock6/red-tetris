@@ -5,13 +5,20 @@ class Room {
 		this.players = [];
 		this.max_players = 4;
 		this.blocklist = Block.generateBlockList(10000);
+		this.gameLoopInterval = null;
 	}
 	addPlayer(player) {
-		if (this.players.length < this.max_players) {
-			this.players.push(player);
-			return true;
+		if (this.players.length >= this.max_players) {
+			return "Room is full"; // Room is full
 		}
-		return false;
+		if (this.players.find(p => p.id === player.id)) {
+			return "Player already in the room"; // Player already in the room
+		}
+		if (this.players.find(p => p.name === player.name)) {
+			return "Player name already taken"; // Player name already taken
+		}
+		this.players.push(player);
+		return "Player added"; // Player successfully added
 	}
 
 	removePlayer(playerId) {
@@ -22,6 +29,15 @@ class Room {
 	}
 	getPlayers() {
 		return this.players;
+	}
+	Get_all_players_info() {
+		return this.players.map(player => ({
+			id: player.id,
+			name: player.name,
+			score: player.score,
+			gameSate: player.game.GetBoard()
+
+		}));
 	}
 }
 

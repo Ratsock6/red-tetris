@@ -53,4 +53,4 @@ function generateBlockList(count) {
 	return blockList;
 }
 
-export { generateBlockList, block };
+export default generateBlockList;

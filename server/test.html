@@ -1,13 +1,314 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Socket Server Test</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: 'Courier New', monospace;
+			background: #1e1e1e;
+			color: #e0e0e0;
+			padding: 20px;
+		}
+
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 20px;
+		}
+
+		.panel {
+			background: #2d2d2d;
+			border: 2px solid #3d3d3d;
+			border-radius: 8px;
+			padding: 20px;
+		}
+
+		.panel h2 {
+			color: #4db8ff;
+			margin-bottom: 15px;
+			border-bottom: 2px solid #4db8ff;
+			padding-bottom: 10px;
+		}
+
+		.status {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			margin-bottom: 20px;
+			padding: 10px;
+			background: #1e1e1e;
+			border-radius: 4px;
+		}
+
+		.status-dot {
+			width: 12px;
+			height: 12px;
+			border-radius: 50%;
+			background: #ff4444;
+		}
+
+		.status-dot.connected {
+			background: #44ff44;
+		}
+
+		.input-group {
+			display: flex;
+			gap: 10px;
+			margin-bottom: 15px;
+		}
+
+		input {
+			flex: 1;
+			padding: 10px;
+			background: #1e1e1e;
+			border: 1px solid #3d3d3d;
+			color: #e0e0e0;
+			border-radius: 4px;
+			font-family: inherit;
+		}
+
+		input:focus {
+			outline: none;
+			border-color: #4db8ff;
+		}
+
+		button {
+			padding: 10px 20px;
+			background: #4db8ff;
+			border: none;
+			color: #1e1e1e;
+			border-radius: 4px;
+			cursor: pointer;
+			font-weight: bold;
+			transition: background 0.3s;
+		}
+
+		button:hover {
+			background: #2196F3;
+		}
+
+		button:active {
+			background: #1976D2;
+		}
+
+		.log {
+			background: #1e1e1e;
+			border: 1px solid #3d3d3d;
+			border-radius: 4px;
+			padding: 10px;
+			height: 300px;
+			overflow-y: auto;
+			font-size: 12px;
+		}
+
+		.log-entry {
+			margin-bottom: 8px;
+			padding: 5px;
+			border-left: 3px solid #3d3d3d;
+			padding-left: 10px;
+		}
+
+		.log-entry.sent {
+			border-left-color: #4db8ff;
+			color: #4db8ff;
+		}
+
+		.log-entry.received {
+			border-left-color: #44ff44;
+			color: #44ff44;
+		}
+
+		.log-entry.error {
+			border-left-color: #ff4444;
+			color: #ff4444;
+		}
+
+		.log-entry.info {
+			border-left-color: #ffaa00;
+			color: #ffaa00;
+		}
+
+		.button-group {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+			margin-bottom: 15px;
+		}
+
+		button.full-width {
+			grid-column: 1 / -1;
+		}
+
+		@media (max-width: 768px) {
+			.container {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
 </head>
 
 <body>
+	<h1>🎮 Socket Server Test Console</h1>
+
+	<div class="container">
+		<div class="panel">
+			<h2>Connection Control</h2>
+
+			<div class="status">
+				<div class="status-dot" id="statusDot"></div>
+				<span id="statusText">Disconnected</span>
+			</div>
+
+			<div class="input-group">
+				<input type="text" id="playerName" placeholder="Enter player name" value="TestPlayer">
+				<button onclick="connect()">Connect</button>
+			</div>
+
+			<div class="button-group">
+				<button onclick="disconnect()">Disconnect</button>
+				<button onclick="clearLog()">Clear Log</button>
+			</div>
+
+			<h3 style="margin-top: 20px; color: #4db8ff;">Join Room</h3>
+			<div class="input-group">
+				<input type="text" id="roomId" placeholder="Room ID" value="room1">
+				<button onclick="joinRoom()">Join</button>
+			</div>
+
+			<h3 style="margin-top: 20px; color: #4db8ff;">Game Events</h3>
+			<div class="button-group">
+				<button onclick="requestGameInfo()">Request Game Info</button>
+			</div>
+		</div>
+
+		<div class="panel">
+			<h2>Event Log</h2>
+			<div class="log" id="eventLog"></div>
+		</div>
+	</div>
+
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
-		const socket = io();
+		let socket = null;
+
+		function updateStatus(connected) {
+			const dot = document.getElementById('statusDot');
+			const text = document.getElementById('statusText');
+			const socketId = socket?.id || 'N/A';
+
+			if (connected) {
+				dot.classList.add('connected');
+				text.textContent = `Connected - ID: ${socketId}`;
+			} else {
+				dot.classList.remove('connected');
+				text.textContent = 'Disconnected';
+			}
+		}
+
+		function addLog(message, type = 'info') {
+			const log = document.getElementById('eventLog');
+			const entry = document.createElement('div');
+			entry.className = `log-entry ${type}`;
+			const time = new Date().toLocaleTimeString();
+			entry.textContent = `[${time}] ${message}`;
+			log.appendChild(entry);
+			log.scrollTop = log.scrollHeight;
+		}
+
+		function clearLog() {
+			document.getElementById('eventLog').innerHTML = '';
+		}
+
+		function connect() {
+			if (socket && socket.connected) {
+				addLog('Already connected', 'info');
+				return;
+			}
+
+			socket = io();
+
+			socket.on('connect', () => {
+				addLog('✓ Connected to server', 'received');
+				updateStatus(true);
+			});
+
+			socket.on('disconnect', () => {
+				addLog('✗ Disconnected from server', 'error');
+				updateStatus(false);
+			});
+
+			socket.on('joinedRoom', (roomId) => {
+				addLog(`✓ Successfully joined room: ${roomId}`, 'received');
+			});
+
+			socket.on('roomFull', (roomId) => {
+				addLog(`✗ Room ${roomId} is full`, 'error');
+			});
+
+			socket.on('Gameinfo', (callback) => {
+				addLog('Server requested game info', 'info');
+				if (callback) callback({ status: 'ok' });
+			});
+
+			socket.on('connect_error', (error) => {
+				addLog(`Connection error: ${error.message}`, 'error');
+			});
+
+			socket.onAny((event, ...args) => {
+				if (!['connect', 'disconnect', 'joinedRoom', 'roomFull', 'Gameinfo'].includes(event)) {
+					addLog(`📨 Event: ${event} | Data: ${JSON.stringify(args)}`, 'received');
+				}
+			});
+		}
+
+		function disconnect() {
+			if (socket) {
+				socket.disconnect();
+				addLog('Disconnecting...', 'info');
+			}
+		}
+
+		function joinRoom() {
+			const roomId = document.getElementById('roomId').value;
+			const playerName = document.getElementById('playerName').value;
+
+			if (!socket || !socket.connected) {
+				addLog('Not connected to server', 'error');
+				return;
+			}
+
+			addLog(`Attempting to join room: ${roomId} as ${playerName}`, 'sent');
+			socket.emit('joinRoom', roomId, playerName);
+		}
+
+		function requestGameInfo() {
+			if (!socket || !socket.connected) {
+				addLog('Not connected to server', 'error');
+				return;
+			}
+
+			addLog('Requesting game info', 'sent');
+			socket.emit('Gameinfo', (response) => {
+				addLog(`Game info response: ${JSON.stringify(response)}`, 'received');
+			});
+		}
+
+		// Auto-log initialization
+		window.addEventListener('load', () => {
+			addLog('🚀 Socket Test Console Ready', 'info');
+			addLog('Click "Connect" to connect to the server', 'info');
+		});
 	</script>
 </body>
 
