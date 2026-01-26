@@ -1,6 +1,7 @@
 import '../styles/home.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { isAlphaNum } from '../utils/validation.js';
 
 
 export default function Home() {
@@ -11,7 +12,7 @@ export default function Home() {
 
     const navigate = useNavigate();
 
-    const isValid = /^[a-zA-Z0-9]+$/.test(pseudo) && /^[a-zA-Z0-9]+$/.test(room);
+    const isValid = isAlphaNum(pseudo) && isAlphaNum(room);
 
     const handleJoin = () => {
         const cleanPseudo = pseudo.trim();
