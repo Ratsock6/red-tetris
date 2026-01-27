@@ -1,0 +1,71 @@
+:root {
+  --cell-size: 24px; /* ← ajuste ici : 24, 28, 32, 36… */
+  --cell-gap: 2px;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(10, var(--cell-size));
+  grid-template-rows: repeat(20, var(--cell-size));
+  gap: var(--cell-gap);
+  padding: 12px;
+  background: #111;
+  border: 2px solid #333;
+  border-radius: 8px;
+}
+
+
+.cell {
+  width: var(--cell-size);
+  height: var(--cell-size);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+
+.cell.empty {
+  background: #1a1a1a;
+  border: 1px solid #222;
+}
+
+/* 1 = Violet */
+.cell.v1 {
+  background: #7c3aed;
+  border: 1px solid #5b21b6;
+}
+
+/* 2 = Orange */
+.cell.v2 {
+  background: #f97316;
+  border: 1px solid #c2410c;
+}
+
+/* 3 = Vert */
+.cell.v3 {
+  background: #22c55e;
+  border: 1px solid #15803d;
+}
+
+/* 4 = Bleu */
+.cell.v4 {
+  background: #3b82f6;
+  border: 1px solid #1d4ed8;
+}
+
+/* 5 = Rouge */
+.cell.v5 {
+  background: #ef4444;
+  border: 1px solid #b91c1c;
+}
+
+/* 6 = Rose */
+.cell.v6 {
+  background: #ec4899;
+  border: 1px solid #be185d;
+}
+
+/* 7 = Blanc */
+.cell.v7 {
+  background: #f3f4f6;
+  border: 1px solid #cbd5e1;
+}

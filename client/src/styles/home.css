@@ -328,3 +328,35 @@ a:hover{ opacity: .9; }
   outline: 3px solid rgba(57,211,255,.35);
   outline-offset: 3px;
 }
+
+
+.room-page {
+  min-height: 100vh;
+  background: #0f0f0f;
+  color: #e5e7eb;
+  padding: 24px;
+}
+
+
+.room-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 48px;
+  margin-top: 32px;
+}
+
+.board-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .room-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+
