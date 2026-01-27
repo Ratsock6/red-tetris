@@ -150,8 +150,91 @@
 			grid-column: 1 / -1;
 		}
 
+		.game-board {
+			display: grid;
+			grid-template-columns: repeat(10, 1fr);
+			gap: 2px;
+			background: #1a1a1a;
+			padding: 10px;
+			border: 3px solid #4db8ff;
+			border-radius: 4px;
+			margin-top: 15px;
+			width: 100%;
+		}
+
+		.cell {
+			aspect-ratio: 1;
+			background: #0a0a0a;
+			border: 1px solid #2a2a2a;
+			border-radius: 2px;
+		}
+
+		.cell.filled {
+			border-color: #4db8ff;
+		}
+
+		.cell.block-1 { background: #ff6b6b; }
+		.cell.block-2 { background: #4ecdc4; }
+		.cell.block-3 { background: #ffe66d; }
+		.cell.block-4 { background: #95e1d3; }
+		.cell.block-5 { background: #a8e6cf; }
+		.cell.block-6 { background: #ffd3b6; }
+		.cell.block-7 { background: #ffaaa5; }
+
+		.game-container {
+			display: grid;
+			grid-template-columns: 1fr 2fr 1fr;
+			gap: 20px;
+			margin-top: 20px;
+		}
+
+		.game-panel {
+			background: #2d2d2d;
+			border: 2px solid #3d3d3d;
+			border-radius: 8px;
+			padding: 20px;
+		}
+
+		.game-display {
+			background: #2d2d2d;
+			border: 2px solid #3d3d3d;
+			border-radius: 8px;
+			padding: 20px;
+			display: flex;
+			justify-content: center;
+			align-items: flex-start;
+		}
+
+		.game-info {
+			display: grid;
+			gap: 15px;
+		}
+
+		.info-item {
+			background: #1e1e1e;
+			padding: 10px;
+			border-left: 3px solid #4db8ff;
+			border-radius: 4px;
+		}
+
+		.info-label {
+			color: #4db8ff;
+			font-weight: bold;
+			font-size: 12px;
+			text-transform: uppercase;
+		}
+
+		.info-value {
+			color: #44ff44;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
 		@media (max-width: 768px) {
 			.container {
+				grid-template-columns: 1fr;
+			}
+			.game-container {
 				grid-template-columns: 1fr;
 			}
 		}
@@ -159,7 +242,7 @@
 </head>
 
 <body>
-	<h1>🎮 Socket Server Test Console</h1>
+	<h1>🎮 Tetris Game - Server Test Console</h1>
 
 	<div class="container">
 		<div class="panel">
@@ -189,12 +272,44 @@
 			<h3 style="margin-top: 20px; color: #4db8ff;">Game Events</h3>
 			<div class="button-group">
 				<button onclick="requestGameInfo()">Request Game Info</button>
+				<button onclick="startGame()">Start Game</button>
+				<button onclick="stopGame()">Stop Game</button>
 			</div>
 		</div>
 
 		<div class="panel">
 			<h2>Event Log</h2>
 			<div class="log" id="eventLog"></div>
+		</div>
+	</div>
+
+	<!-- Game Display Section -->
+	<div class="game-container">
+		<div class="game-panel">
+			<h3 style="color: #4db8ff; margin-bottom: 15px;">📊 Game Stats</h3>
+			<div class="game-info">
+				<div class="info-item">
+					<div class="info-label">Score</div>
+					<div class="info-value" id="playerScore">0</div>
+				</div>
+				<div class="info-item">
+					<div class="info-label">Status</div>
+					<div class="info-value" id="gameStatus">Waiting...</div>
+				</div>
+				<div class="info-item">
+					<div class="info-label">Players</div>
+					<div class="info-value" id="playerCount">0</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="game-display">
+			<div id="gameBoard" class="game-board"></div>
+		</div>
+
+		<div class="game-panel">
+			<h3 style="color: #4db8ff; margin-bottom: 15px;">👥 Players Info</h3>
+			<div id="playersList" style="max-height: 400px; overflow-y: auto;"></div>
 		</div>
 	</div>
 
@@ -261,9 +376,13 @@
 				addLog(`✗ Room ${roomId} is full`, 'error');
 			});
 
-			socket.on('Gameinfo', (callback) => {
-				addLog('Server requested game info', 'info');
-				if (callback) callback({ status: 'ok' });
+			// Listener for gameinfo events from server
+			socket.on('gameinfo', (data) => {
+				console.log('Received gameinfo:', data);
+				if (data && data.length > 0) {
+					displayGameBoard(data[0].gameSate);
+					updatePlayersList(data);
+				}
 			});
 
 			socket.on('connect_error', (error) => {
@@ -304,14 +423,121 @@
 
 			addLog('Requesting game info', 'sent');
 			socket.emit('Gameinfo', (response) => {
-				addLog(`Game info response: ${JSON.stringify(response)}`, 'received');
+				console.log('Response received:', response);
+				if (response && Array.isArray(response) && response.length > 0) {
+					addLog(`✓ Received game info for ${response.length} player(s)`, 'received');
+					displayGameBoard(response[0].gameSate);
+					updatePlayersList(response);
+				} else {
+					addLog('❌ No game data received', 'error');
+				}
 			});
+		}
+
+		function displayGameBoard(board) {
+			const gameBoard = document.getElementById('gameBoard');
+			gameBoard.innerHTML = '';
+			
+			if (!board || board.length === 0) {
+				gameBoard.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #888;">No game data</p>';
+				return;
+			}
+
+			// Create cells for each position in the board
+			for (let row = 0; row < board.length; row++) {
+				for (let col = 0; col < board[row].length; col++) {
+					const cell = document.createElement('div');
+					cell.className = 'cell';
+					
+					const value = board[row][col];
+					if (value !== 0) {
+						cell.classList.add('filled');
+						cell.classList.add(`block-${value}`);
+					}
+					
+					gameBoard.appendChild(cell);
+				}
+			}
+		}
+
+		function updatePlayersList(playersInfo) {
+			const playersList = document.getElementById('playersList');
+			playersList.innerHTML = '';
+
+			playersInfo.forEach((player, index) => {
+				const playerDiv = document.createElement('div');
+				playerDiv.style.cssText = 'background: #1e1e1e; padding: 10px; margin-bottom: 10px; border-left: 3px solid #4db8ff; border-radius: 4px;';
+				
+				playerDiv.innerHTML = `
+					<div style="color: #4db8ff; font-weight: bold; margin-bottom: 5px;">Player ${index + 1}: ${player.name}</div>
+					<div style="color: #44ff44; font-size: 14px;">Score: ${player.score}</div>
+				`;
+				
+				playersList.appendChild(playerDiv);
+			});
+
+			document.getElementById('playerCount').textContent = playersInfo.length;
+		}
+
+		function startGame() {
+			if (!socket || !socket.connected) {
+				addLog('Not connected to server', 'error');
+				return;
+			}
+
+			addLog('Starting game...', 'sent');
+			socket.emit('startGame');
+			document.getElementById('gameStatus').textContent = '🎮 RUNNING';
+			document.getElementById('gameStatus').style.color = '#44ff44';
+
+			socket.on('gameStarted', () => {
+				addLog('✓ Game started - gravity enabled (800ms interval)', 'received');
+			});
+
+			// Update game state every 800ms to match gravity speed
+			const gameUpdateInterval = setInterval(() => {
+				if (socket && socket.connected) {
+					socket.emit('Gameinfo', (response) => {
+						if (response && response.length > 0) {
+							displayGameBoard(response[0].gameSate);
+							updatePlayersList(response);
+							document.getElementById('playerScore').textContent = response[0].score;
+						}
+					});
+				} else {
+					clearInterval(gameUpdateInterval);
+				}
+			}, 800);
+
+			// Store interval ID for cleanup
+			window.gameUpdateInterval = gameUpdateInterval;
+		}
+
+		function stopGame() {
+			if (!socket || !socket.connected) {
+				addLog('Not connected to server', 'error');
+				return;
+			}
+
+			addLog('Stopping game...', 'sent');
+			socket.emit('stopGame');
+			document.getElementById('gameStatus').textContent = '⏸️ STOPPED';
+			document.getElementById('gameStatus').style.color = '#ffaa00';
+
+			// Clear game update interval
+			if (window.gameUpdateInterval) {
+				clearInterval(window.gameUpdateInterval);
+			}
 		}
 
 		// Auto-log initialization
 		window.addEventListener('load', () => {
 			addLog('🚀 Socket Test Console Ready', 'info');
 			addLog('Click "Connect" to connect to the server', 'info');
+			
+			// Initialize empty game board
+			const emptyBoard = Array.from({ length: 20 }, () => Array(10).fill(0));
+			displayGameBoard(emptyBoard);
 		});
 	</script>
 </body>

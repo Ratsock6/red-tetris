@@ -42,11 +42,33 @@ export function initializeSocket(io, rooms) {
 			}
 		});
 		//game events
-		socket.on('Gameinfo', () => {
+		socket.on('Gameinfo', (callback) => {
 			console.log('Game info requested');
 			if (currentRoom) {
-				socket.emit('gameinfo', currentRoom.Get_all_players_info());
-				console.log('Game info sent');
+				const gameInfo = currentRoom.Get_all_players_info();
+				console.log('Game info sent:', gameInfo);
+				if (typeof callback === 'function') {
+					callback(gameInfo);
+				} else {
+					socket.emit('gameinfo', gameInfo);
+				}
+			}
+		});
+
+		// Start the game and gravity loop
+		socket.on('startGame', () => {
+			if (currentRoom && player) {
+				player.game.startGravity();
+				console.log(`Game started for player ${socket.id}`);
+				socket.emit('gameStarted');
+			}
+		});
+
+		// Stop the game and gravity loop
+		socket.on('stopGame', () => {
+			if (player) {
+				player.game.stopGravity();
+				console.log(`Game stopped for player ${socket.id}`);
 			}
 		});
 	});
