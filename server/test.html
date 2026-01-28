@@ -173,13 +173,33 @@
 			border-color: #4db8ff;
 		}
 
-		.cell.block-1 { background: #ff6b6b; }
-		.cell.block-2 { background: #4ecdc4; }
-		.cell.block-3 { background: #ffe66d; }
-		.cell.block-4 { background: #95e1d3; }
-		.cell.block-5 { background: #a8e6cf; }
-		.cell.block-6 { background: #ffd3b6; }
-		.cell.block-7 { background: #ffaaa5; }
+		.cell.block-1 {
+			background: #ff6b6b;
+		}
+
+		.cell.block-2 {
+			background: #4ecdc4;
+		}
+
+		.cell.block-3 {
+			background: #ffe66d;
+		}
+
+		.cell.block-4 {
+			background: #95e1d3;
+		}
+
+		.cell.block-5 {
+			background: #a8e6cf;
+		}
+
+		.cell.block-6 {
+			background: #ffd3b6;
+		}
+
+		.cell.block-7 {
+			background: #ffaaa5;
+		}
 
 		.game-container {
 			display: grid;
@@ -234,6 +254,7 @@
 			.container {
 				grid-template-columns: 1fr;
 			}
+
 			.game-container {
 				grid-template-columns: 1fr;
 			}
@@ -376,12 +397,23 @@
 				addLog(`✗ Room ${roomId} is full`, 'error');
 			});
 
-			// Listener for gameinfo events from server
-			socket.on('gameinfo', (data) => {
-				console.log('Received gameinfo:', data);
+			// Listener for gameUpdate events from server (auto push)
+			socket.on('gameUpdate', (data) => {
+				console.log('Received gameUpdate:', data);
 				if (data && data.length > 0) {
 					displayGameBoard(data[0].gameSate);
 					updatePlayersList(data);
+					document.getElementById('playerScore').textContent = data[0].score;
+					
+					// Update game status based on gameActive state
+					const gameStatus = document.getElementById('gameStatus');
+					if (data[0].gameActive) {
+						gameStatus.textContent = '🎮 RUNNING';
+						gameStatus.style.color = '#44ff44';
+					} else {
+						gameStatus.textContent = '💀 GAME OVER';
+						gameStatus.style.color = '#ff4444';
+					}
 				}
 			});
 
@@ -421,23 +453,13 @@
 				return;
 			}
 
-			addLog('Requesting game info', 'sent');
-			socket.emit('Gameinfo', (response) => {
-				console.log('Response received:', response);
-				if (response && Array.isArray(response) && response.length > 0) {
-					addLog(`✓ Received game info for ${response.length} player(s)`, 'received');
-					displayGameBoard(response[0].gameSate);
-					updatePlayersList(response);
-				} else {
-					addLog('❌ No game data received', 'error');
-				}
-			});
+			addLog('⚠️ Game info is now auto-synced via gameUpdate events', 'info');
 		}
 
 		function displayGameBoard(board) {
 			const gameBoard = document.getElementById('gameBoard');
 			gameBoard.innerHTML = '';
-			
+
 			if (!board || board.length === 0) {
 				gameBoard.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #888;">No game data</p>';
 				return;
@@ -448,13 +470,13 @@
 				for (let col = 0; col < board[row].length; col++) {
 					const cell = document.createElement('div');
 					cell.className = 'cell';
-					
+
 					const value = board[row][col];
 					if (value !== 0) {
 						cell.classList.add('filled');
 						cell.classList.add(`block-${value}`);
 					}
-					
+
 					gameBoard.appendChild(cell);
 				}
 			}
@@ -467,12 +489,12 @@
 			playersInfo.forEach((player, index) => {
 				const playerDiv = document.createElement('div');
 				playerDiv.style.cssText = 'background: #1e1e1e; padding: 10px; margin-bottom: 10px; border-left: 3px solid #4db8ff; border-radius: 4px;';
-				
+
 				playerDiv.innerHTML = `
 					<div style="color: #4db8ff; font-weight: bold; margin-bottom: 5px;">Player ${index + 1}: ${player.name}</div>
 					<div style="color: #44ff44; font-size: 14px;">Score: ${player.score}</div>
 				`;
-				
+
 				playersList.appendChild(playerDiv);
 			});
 
@@ -492,25 +514,8 @@
 
 			socket.on('gameStarted', () => {
 				addLog('✓ Game started - gravity enabled (800ms interval)', 'received');
+				addLog('📡 Listening for auto gameUpdate events...', 'info');
 			});
-
-			// Update game state every 800ms to match gravity speed
-			const gameUpdateInterval = setInterval(() => {
-				if (socket && socket.connected) {
-					socket.emit('Gameinfo', (response) => {
-						if (response && response.length > 0) {
-							displayGameBoard(response[0].gameSate);
-							updatePlayersList(response);
-							document.getElementById('playerScore').textContent = response[0].score;
-						}
-					});
-				} else {
-					clearInterval(gameUpdateInterval);
-				}
-			}, 800);
-
-			// Store interval ID for cleanup
-			window.gameUpdateInterval = gameUpdateInterval;
 		}
 
 		function stopGame() {
@@ -523,20 +528,53 @@
 			socket.emit('stopGame');
 			document.getElementById('gameStatus').textContent = '⏸️ STOPPED';
 			document.getElementById('gameStatus').style.color = '#ffaa00';
-
-			// Clear game update interval
-			if (window.gameUpdateInterval) {
-				clearInterval(window.gameUpdateInterval);
-			}
 		}
+
+		// Handle arrow keys for block movement
+		document.addEventListener('keydown', (event) => {
+			if (!socket || !socket.connected) return;
+
+			switch (event.key) {
+				case 'ArrowLeft':
+					event.preventDefault();
+					socket.emit('moveBlock', -1);
+					addLog('⬅️ Move Left', 'sent');
+					break;
+				case 'ArrowRight':
+					event.preventDefault();
+					socket.emit('moveBlock', 1);
+					addLog('➡️ Move Right', 'sent');
+					break;
+				case 'z':
+				case 'Z':
+					event.preventDefault();
+					socket.emit('RotateBlock', 'clockwise');
+					addLog('🔄 Rotate Clockwise', 'sent');
+					break;
+				case 'x':
+				case 'X':
+					event.preventDefault();
+					socket.emit('RotateBlock', 'counterclockwise');
+					addLog('🔄 Rotate Counter-Clockwise', 'sent');
+					break;
+				case 'r':
+				case 'R':
+					event.preventDefault();
+					socket.emit('dropBlock');
+					addLog('dropBlock', 'sent');
+					break;
+			}
+		});
 
 		// Auto-log initialization
 		window.addEventListener('load', () => {
 			addLog('🚀 Socket Test Console Ready', 'info');
 			addLog('Click "Connect" to connect to the server', 'info');
-			
+			addLog('📌 Use Arrow Left/Right to move the block', 'info');
+			addLog('📌 Use Z to rotate clockwise, X to rotate counter-clockwise', 'info');
+
 			// Initialize empty game board
-			const emptyBoard = Array.from({ length: 20 }, () => Array(10).fill(0));
+			const emptyBoard = Array.from({length: 20}, () => Array(10).fill(0));
 			displayGameBoard(emptyBoard);
 		});
 	</script>

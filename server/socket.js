@@ -8,10 +8,10 @@ export function initializeSocket(io, rooms) {
 		let player = null;
 		let currentRoom = null;
 
-	socket.on('setPlayerName', (playerName) => {
-		console.log('Player Name:', playerName);
-		player = new Player(socket.id, playerName, null);
-	});
+		socket.on('setPlayerName', (playerName) => {
+			console.log('Player Name:', playerName);
+			player = new Player(socket.id, playerName, null, null);
+		});
 
 		socket.on('disconnect', () => {
 			rooms.forEach((room) => {
@@ -28,8 +28,13 @@ export function initializeSocket(io, rooms) {
 				room = new Room(roomId);
 				rooms.set(roomId, room);
 			}
-			// Recreate player with room reference
-			player = new Player(socket.id, player.name, room);
+			const onGameUpdate = () => {
+				if (currentRoom) {
+					const gameInfo = currentRoom.Get_all_players_info();
+					io.to(roomId).emit('gameUpdate', gameInfo);
+				}
+			};
+			player = new Player(socket.id, player.name, room, onGameUpdate);
 			if (room.addPlayer(player)) {
 				currentRoom = room;
 				socket.join(roomId);
@@ -52,6 +57,26 @@ export function initializeSocket(io, rooms) {
 				} else {
 					socket.emit('gameinfo', gameInfo);
 				}
+			}
+		});
+		// -1 : left, 1: right
+		socket.on('moveBlock', (direction) => {
+			if (currentRoom && player) {
+				player.game.moveBlock(direction);
+				console.log(`Player ${socket.id} moved block ${direction}`);
+			}
+		});
+		socket.on('dropBlock', () => {
+			if (currentRoom && player) {
+				player.game.applyGravity();
+				console.log(`Player ${socket.id} dropped block`);
+			}
+		});
+
+		socket.on('RotateBlock', (direction) => {
+			if (currentRoom && player) {
+				player.game.rotateBlock(direction);
+				console.log(`Player ${socket.id} rotated block ${direction}`);
 			}
 		});
 

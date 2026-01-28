@@ -3,16 +3,17 @@ const COLS = 10;
 const GRAVITY_INTERVAL = 800; // milliseconds (0.8 second per line)
 
 class Game {
-	constructor(blockList = [], blockIndex = 0) {
+	constructor(blockList = [], blockIndex = 0, onUpdate = null) {
 		this.board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 		this.active = true;
+		this.score = 0;
 		this.blockList = blockList;
 		this.blockIndex = blockIndex;
 		this.currentBlock = null;
 		this.currentPosition = null;
 		this.gravityTimer = null;
+		this.onUpdate = onUpdate;
 
-		// Place initial block if blockList is provided
 		if (blockList.length > 0) {
 			const block = blockList[blockIndex];
 			this.currentPosition = { x: 3, y: 0 };
@@ -50,6 +51,7 @@ class Game {
 				this.board.unshift(Array(COLS).fill(0));
 				linesCleared++;
 				r++;
+				this.score += 100;
 			}
 		}
 		return linesCleared;
@@ -59,6 +61,12 @@ class Game {
 	}
 	GetBoard() {
 		return this.board;
+	}
+
+	notifyUpdate() {
+		if (this.onUpdate && typeof this.onUpdate === 'function') {
+			this.onUpdate();
+		}
 	}
 
 	isValidPosition(block, position) {
@@ -121,7 +129,79 @@ class Game {
 			this.placeBlock(this.currentBlock, this.currentPosition);
 			this.lockBlock();
 		}
+
+		// Notifier les changements
+		this.notifyUpdate();
 	}
+	moveBlock(direction) {
+
+		if (direction !== -1 && direction !== 1) return;
+		if (!this.active || !this.currentBlock || !this.currentPosition) return;
+
+
+		const tempPosition = {
+			x: this.currentPosition.x + direction,
+			y: this.currentPosition.y
+		};
+		if (tempPosition.x < 0 || tempPosition.x + this.currentBlock.shape[0].length > COLS) return;
+		this.clearBlock(this.currentBlock, this.currentPosition);
+
+		const newPosition = {
+			x: this.currentPosition.x + direction,
+			y: this.currentPosition.y
+		};
+
+		if (this.isValidPosition(this.currentBlock, newPosition)) {
+			this.currentPosition = newPosition;
+			this.placeBlock(this.currentBlock, this.currentPosition);
+		} else {
+			this.placeBlock(this.currentBlock, this.currentPosition);
+			this.lockBlock();
+		}
+
+		// Notifier les changements
+		this.notifyUpdate();
+	}
+	rotateBlock(direction) {
+		if (direction !== 'clockwise' && direction !== 'counterclockwise') return;
+		if (!this.active || !this.currentBlock || !this.currentPosition) return;
+
+		const rows = this.currentBlock.shape.length;
+		const cols = this.currentBlock.shape[0].length;
+		let rotatedShape = Array.from({ length: cols }, () => Array(rows));
+
+		if (direction === 'clockwise') {
+			for (let r = 0; r < rows; r++) {
+				for (let c = 0; c < cols; c++) {
+					rotatedShape[c][rows - 1 - r] = this.currentBlock.shape[r][c];
+				}
+			}
+		} else {
+			for (let r = 0; r < rows; r++) {
+				for (let c = 0; c < cols; c++) {
+					rotatedShape[cols - 1 - c][r] = this.currentBlock.shape[r][c];
+				}
+			}
+		}
+
+		const rotatedBlock = {
+			...this.currentBlock,
+			shape: rotatedShape
+		};
+
+		this.clearBlock(this.currentBlock, this.currentPosition);
+
+		if (this.isValidPosition(rotatedBlock, this.currentPosition)) {
+			this.currentBlock = rotatedBlock;
+			this.placeBlock(this.currentBlock, this.currentPosition);
+		} else {
+			this.placeBlock(this.currentBlock, this.currentPosition);
+		}
+
+		// Notifier les changements
+		this.notifyUpdate();
+	}
+
 
 	lockBlock() {
 		this.currentBlock = null;
@@ -136,7 +216,7 @@ class Game {
 			this.currentPosition = { x: 3, y: 0 };
 
 			if (!this.isValidPosition(this.currentBlock, this.currentPosition)) {
-				this.active = false;
+				this.endGame();
 				return { gameOver: true, linesCleared };
 			}
 
@@ -144,6 +224,14 @@ class Game {
 		}
 
 		return { gameOver: false, linesCleared };
+	}
+
+	endGame() {
+		this.active = false;
+		this.stopGravity();
+		this.currentBlock = null;
+		this.currentPosition = null;
+		this.notifyUpdate();
 	}
 
 	startGravity() {

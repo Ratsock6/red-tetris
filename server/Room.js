@@ -37,7 +37,7 @@ class Room {
 		return this.players.map(player => ({
 			id: player.id,
 			name: player.name,
-			score: player.score,
+			score: player.game.score,
 			gameSate: player.game.GetBoard(),
 			gameActive: player.game.active,
 			isHost: player.isHost
