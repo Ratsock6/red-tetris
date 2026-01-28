@@ -8,6 +8,7 @@ class Player {
 		this.room = room;
 		this.blockIndex = 0;
 		this.game = new Game(room ? room.blocklist : [], this.blockIndex);
+		this.isHost = false;
 	}
 
 	newGame() {

@@ -17,6 +17,9 @@ class Room {
 		if (this.players.find(p => p.name === player.name)) {
 			return "Player name already taken"; // Player name already taken
 		}
+		if (this.players.length == 0) {
+			player.isHost = true;
+		}
 		this.players.push(player);
 		return "Player added"; // Player successfully added
 	}
@@ -35,8 +38,9 @@ class Room {
 			id: player.id,
 			name: player.name,
 			score: player.score,
-			gameSate: player.game.GetBoard()
-
+			gameSate: player.game.GetBoard(),
+			gameActive: player.game.active,
+			isHost: player.isHost
 		}));
 	}
 }

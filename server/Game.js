@@ -63,20 +63,20 @@ class Game {
 
 	isValidPosition(block, position) {
 		if (!block || !position) return false;
-		
+
 		const { shape, id } = block;
 		const { x, y } = position;
-		
+
 		for (let r = 0; r < shape.length; r++) {
 			for (let c = 0; c < shape[r].length; c++) {
 				if (shape[r][c]) {
 					const boardRow = y + r;
 					const boardCol = x + c;
-					
+
 					if (boardRow < 0 || boardRow >= ROWS || boardCol < 0 || boardCol >= COLS) {
 						return false;
 					}
-					
+
 					if (this.board[boardRow][boardCol] !== 0) {
 						return false;
 					}
@@ -88,10 +88,10 @@ class Game {
 
 	clearBlock(block, position) {
 		if (!block || !position) return;
-		
+
 		const { shape, id } = block;
 		const { x, y } = position;
-		
+
 		for (let r = 0; r < shape.length; r++) {
 			for (let c = 0; c < shape[r].length; c++) {
 				if (shape[r][c]) {
@@ -109,11 +109,11 @@ class Game {
 
 	applyGravity() {
 		if (!this.active || !this.currentBlock || !this.currentPosition) return;
-		
+
 		this.clearBlock(this.currentBlock, this.currentPosition);
-		
+
 		const newPosition = { x: this.currentPosition.x, y: this.currentPosition.y + 1 };
-		
+
 		if (this.isValidPosition(this.currentBlock, newPosition)) {
 			this.currentPosition = newPosition;
 			this.placeBlock(this.currentBlock, this.currentPosition);
@@ -126,23 +126,23 @@ class Game {
 	lockBlock() {
 		this.currentBlock = null;
 		this.currentPosition = null;
-		
+
 		const linesCleared = this.handleFullLines();
-		
+
 		if (this.active && this.blockIndex < this.blockList.length) {
 			this.blockIndex++;
 			const nextBlock = this.blockList[this.blockIndex];
 			this.currentBlock = nextBlock;
 			this.currentPosition = { x: 3, y: 0 };
-			
+
 			if (!this.isValidPosition(this.currentBlock, this.currentPosition)) {
 				this.active = false;
 				return { gameOver: true, linesCleared };
 			}
-			
+
 			this.placeBlock(this.currentBlock, this.currentPosition);
 		}
-		
+
 		return { gameOver: false, linesCleared };
 	}
 
@@ -150,7 +150,7 @@ class Game {
 		if (this.gravityTimer) {
 			clearInterval(this.gravityTimer);
 		}
-		
+
 		this.gravityTimer = setInterval(() => {
 			this.applyGravity();
 		}, GRAVITY_INTERVAL);
