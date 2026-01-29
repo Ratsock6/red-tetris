@@ -88,10 +88,17 @@ export function initializeSocket(io, rooms) {
 
 		// Start the game and gravity loop
 		socket.on('startGame', () => {
+			if (!player.isHost) {
+				console.log(`Player ${socket.id} is not the host and cannot start the game.`);
+				socket.emit('notHost');
+				return;
+			}
 			if (currentRoom && player) {
-				player.game.startGravity();
-				console.log(`Game started for player ${socket.id}`);
-				socket.emit('gameStarted');
+				for (const p of currentRoom.players) {
+					p.game.startGravity();
+					console.log(`Game started for player ${socket.id}`);
+					socket.emit('gameStarted');
+				}
 			}
 		});
 
