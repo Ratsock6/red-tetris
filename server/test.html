@@ -337,6 +337,7 @@
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
 		let socket = null;
+		let currentPlayerId = null;
 
 		function updateStatus(connected) {
 			const dot = document.getElementById('statusDot');
@@ -376,6 +377,7 @@
 
 			socket.on('connect', () => {
 				addLog('✓ Connected to server', 'received');
+				currentPlayerId = socket.id;
 				updateStatus(true);
 				const playerName = document.getElementById('playerName').value;
 				if (playerName) {
@@ -401,19 +403,25 @@
 			socket.on('gameUpdate', (data) => {
 				console.log('Received gameUpdate:', data);
 				if (data && data.length > 0) {
-					displayGameBoard(data[0].gameSate);
-					updatePlayersList(data);
-					document.getElementById('playerScore').textContent = data[0].score;
-
-					// Update game status based on gameActive state
-					const gameStatus = document.getElementById('gameStatus');
-					if (data[0].gameActive) {
-						gameStatus.textContent = '🎮 RUNNING';
-						gameStatus.style.color = '#44ff44';
-					} else {
-						gameStatus.textContent = '💀 GAME OVER';
-						gameStatus.style.color = '#ff4444';
+					// Trouver le joueur courant dans la liste
+					const currentPlayer = data.find(p => p.id === currentPlayerId);
+					
+					if (currentPlayer) {
+						displayGameBoard(currentPlayer.gameSate);
+						document.getElementById('playerScore').textContent = currentPlayer.score;
+						
+						// Update game status based on gameActive state
+						const gameStatus = document.getElementById('gameStatus');
+						if (currentPlayer.gameActive) {
+							gameStatus.textContent = '🎮 RUNNING';
+							gameStatus.style.color = '#44ff44';
+						} else {
+							gameStatus.textContent = '💀 GAME OVER';
+							gameStatus.style.color = '#ff4444';
+						}
 					}
+					
+					updatePlayersList(data);
 				}
 			});
 

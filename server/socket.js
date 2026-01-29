@@ -16,6 +16,10 @@ export function initializeSocket(io, rooms) {
 		socket.on('disconnect', () => {
 			rooms.forEach((room) => {
 				room.removePlayer(socket.id);
+				if (room.players.length === 0) {
+					rooms.delete(room.id);
+					console.log(`Room ${room.id} deleted as it became empty.`);
+				}
 			});
 			console.log(socket.id, ' disconnected');
 		});
@@ -29,7 +33,7 @@ export function initializeSocket(io, rooms) {
 				rooms.set(roomId, room);
 			}
 			const onGameUpdate = () => {
-				if (currentRoom) {
+				if (currentRoom && player) {
 					const gameInfo = currentRoom.Get_all_players_info();
 					io.to(roomId).emit('gameUpdate', gameInfo);
 				}
@@ -61,18 +65,22 @@ export function initializeSocket(io, rooms) {
 		});
 		// -1 : left, 1: right
 		socket.on('moveBlock', (direction) => {
+			if (!player.game.active) return;
 			if (currentRoom && player) {
 				player.game.moveBlock(direction);
 				console.log(`Player ${socket.id} moved block ${direction}`);
 			}
 		});
 		socket.on('hardDrop', () => {
+			if (!player.game.active) return;
+
 			if (currentRoom && player) {
 				player.game.hardDrop();
 				console.log(`Player ${socket.id} performed hard drop`);
 			}
 		});
 		socket.on('dropBlock', () => {
+			if (!player.game.active) return;
 			if (currentRoom && player) {
 				player.game.applyGravity();
 				console.log(`Player ${socket.id} dropped block`);
@@ -80,6 +88,8 @@ export function initializeSocket(io, rooms) {
 		});
 
 		socket.on('RotateBlock', (direction) => {
+
+			if (!player.game.active) return;
 			if (currentRoom && player) {
 				player.game.rotateBlock(direction);
 				console.log(`Player ${socket.id} rotated block ${direction}`);
@@ -88,6 +98,7 @@ export function initializeSocket(io, rooms) {
 
 		// Start the game and gravity loop
 		socket.on('startGame', () => {
+			if (!player.game.active) return;
 			if (!player.isHost) {
 				console.log(`Player ${socket.id} is not the host and cannot start the game.`);
 				socket.emit('notHost');
@@ -104,9 +115,18 @@ export function initializeSocket(io, rooms) {
 
 		// Stop the game and gravity loop
 		socket.on('stopGame', () => {
-			if (player) {
-				player.game.stopGravity();
-				console.log(`Game stopped for player ${socket.id}`);
+			console.log(currentRoom.players);
+			if (!player.isHost) {
+				console.log(`Player ${socket.id} is not the host and cannot stop the game.`);
+				socket.emit('notHost');
+				return;
+			}
+
+			for (const p of currentRoom.players) {
+				p.game.active = false;
+				p.game.stopGravity();
+				console.log(`Game stopped for player ${p.name}`);
+				socket.emit('gameStopped');
 			}
 		});
 	});
