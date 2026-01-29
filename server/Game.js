@@ -9,6 +9,7 @@ class Game {
 		this.score = 0;
 		this.blockList = blockList;
 		this.blockIndex = blockIndex;
+		this.current_block = 0;
 		this.currentBlock = null;
 		this.currentPosition = null;
 		this.gravityTimer = null;
