@@ -66,6 +66,12 @@ export function initializeSocket(io, rooms) {
 				console.log(`Player ${socket.id} moved block ${direction}`);
 			}
 		});
+		socket.on('hardDrop', () => {
+			if (currentRoom && player) {
+				player.game.hardDrop();
+				console.log(`Player ${socket.id} performed hard drop`);
+			}
+		});
 		socket.on('dropBlock', () => {
 			if (currentRoom && player) {
 				player.game.applyGravity();

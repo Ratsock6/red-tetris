@@ -133,6 +133,24 @@ class Game {
 		// Notifier les changements
 		this.notifyUpdate();
 	}
+	hardDrop() {
+		if (!this.active || !this.currentBlock || !this.currentPosition) return;
+
+		this.clearBlock(this.currentBlock, this.currentPosition);
+
+		let newPosition = { x: this.currentPosition.x, y: this.currentPosition.y };
+
+		while (this.isValidPosition(this.currentBlock, { x: newPosition.x, y: newPosition.y + 1 })) {
+			newPosition.y += 1;
+		}
+
+		this.currentPosition = newPosition;
+		this.placeBlock(this.currentBlock, this.currentPosition);
+		this.lockBlock();
+
+		// Notifier les changements
+		this.notifyUpdate();
+	}
 	moveBlock(direction) {
 
 		if (direction !== -1 && direction !== 1) return;

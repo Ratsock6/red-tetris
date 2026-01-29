@@ -404,7 +404,7 @@
 					displayGameBoard(data[0].gameSate);
 					updatePlayersList(data);
 					document.getElementById('playerScore').textContent = data[0].score;
-					
+
 					// Update game status based on gameActive state
 					const gameStatus = document.getElementById('gameStatus');
 					if (data[0].gameActive) {
@@ -561,6 +561,13 @@
 				case 'R':
 					event.preventDefault();
 					socket.emit('dropBlock');
+					addLog('dropBlock', 'sent');
+					break;
+
+				case 'p':
+				case 'p':
+					event.preventDefault();
+					socket.emit('hardDrop');
 					addLog('dropBlock', 'sent');
 					break;
 			}
