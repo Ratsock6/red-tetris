@@ -35,7 +35,7 @@ export default function Room() {
       <main className="room-layout">
         
         <aside className="sidebar">
-          <h2>Joueurs</h2>
+          <h2>Players</h2>
           <ul className="player-list">
             {players.map((p) => (
               <li
