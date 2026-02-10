@@ -28,7 +28,7 @@ export default function Room() {
       <header className="room-header">
         <h1>Room : {room}</h1>
         <p>
-          Joueur : <strong>{pseudo}</strong>
+          Player : <strong>{pseudo}</strong>
         </p>
       </header>
 
@@ -53,7 +53,7 @@ export default function Room() {
 
         <section className="board-section">
           <h2>
-            Plateau — {currentPlayer?.name}
+            Board — {currentPlayer?.name}
           </h2>
           <p className="score">Score : {score}</p>
 
@@ -63,7 +63,7 @@ export default function Room() {
             </div>
           ) : (
             <p className="error">
-              Grille introuvable (champ attendu : <code>gameSate</code>)
+              Grid not found (expected field: <code>gameState</code>)
             </p>
           )}
         </section>
