@@ -1,10 +1,14 @@
 import "../styles/board.css";
 
-export default function Board({ grid }) {
+export default function Board({ grid, size = "large" }) {
   if (!Array.isArray(grid)) return null;
 
   return (
-    <div className="board" role="grid" aria-label="tetris-board">
+    <div
+      className={`board ${size === "small" ? "board--small" : "board--large"}`}
+      role="grid"
+      aria-label="tetris-board"
+    >
       {grid.map((row, r) =>
         row.map((cell, c) => {
           const value = Number(cell) || 0;

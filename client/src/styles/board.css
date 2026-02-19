@@ -69,3 +69,40 @@
   background: #f3f4f6;
   border: 1px solid #cbd5e1;
 }
+
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+}
+
+/* Taille "large" (joueur principal) */
+.board--large {
+  width: 320px; /* ou ce que tu veux */
+}
+
+.board--large .cell {
+  width: 30px;
+  height: 30px;
+}
+
+.board--small {
+  width: 160px;
+  gap: 1px;
+}
+
+.board--small .cell {
+  width: 14px;
+  height: 14px;
+}
+
+.cell {
+  border-radius: 2px;
+}
+
+.cell.empty {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+
