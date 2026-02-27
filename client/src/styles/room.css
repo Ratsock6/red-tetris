@@ -1,0 +1,45 @@
+.room {
+  height: 100dvh;
+  overflow: hidden;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.roomHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.roomContent {
+  margin-top: 18px;
+  height: calc(100% - 72px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  align-items: start;
+}
+
+.playerPanel {
+  min-width: 0;
+}
+
+.sidePanel {
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  padding-left: 16px;
+  height: 100%;
+  overflow: auto;
+}
+
+.otherPlayerCard {
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.otherPlayerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}

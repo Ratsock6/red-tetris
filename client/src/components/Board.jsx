@@ -1,11 +1,11 @@
 import "../styles/board.css";
 
-export default function Board({ grid, size = "large" }) {
+export default function Board({ grid }) {
   if (!Array.isArray(grid)) return null;
 
   return (
     <div
-      className={`board ${size === "small" ? "board--small" : "board--large"}`}
+      className={`board`}
       role="grid"
       aria-label="tetris-board"
     >

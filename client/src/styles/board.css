@@ -1,5 +1,5 @@
 :root {
-  --cell-size: 24px; /* ← ajuste ici : 24, 28, 32, 36… */
+  --cell-size: 32px;
   --cell-gap: 2px;
 }
 
@@ -7,11 +7,11 @@
   display: grid;
   grid-template-columns: repeat(10, var(--cell-size));
   grid-template-rows: repeat(20, var(--cell-size));
-  gap: var(--cell-gap);
   padding: 12px;
   background: #111;
   border: 2px solid #333;
-  border-radius: 8px;
+  width: fit-content;
+  height: fit-content;
 }
 
 
@@ -75,34 +75,6 @@
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   gap: 2px;
-}
-
-/* Taille "large" (joueur principal) */
-.board--large {
-  width: 320px; /* ou ce que tu veux */
-}
-
-.board--large .cell {
-  width: 30px;
-  height: 30px;
-}
-
-.board--small {
-  width: 160px;
-  gap: 1px;
-}
-
-.board--small .cell {
-  width: 14px;
-  height: 14px;
-}
-
-.cell {
-  border-radius: 2px;
-}
-
-.cell.empty {
-  background: rgba(255, 255, 255, 0.08);
 }
 
 
