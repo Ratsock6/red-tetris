@@ -38,7 +38,7 @@ class Room {
 			id: player.id,
 			name: player.name,
 			score: player.game.score,
-			gameSate: player.game.GetBoard(),
+			gameState: player.game.GetBoard(),
 			gameActive: player.game.active,
 			isHost: player.isHost
 		}));

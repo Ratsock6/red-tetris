@@ -4,7 +4,7 @@
       "id": "zcGPbfpA1gC2f3W0AAAD",
       "name": "TestPlayer",
       "score": 0,
-      "gameSate": [
+      "gameState": [
         [
           0,
           0,
@@ -251,7 +251,7 @@
       "id": "pAWuCKl4o5eVKELnAAAF",
       "name": "TestPlayer4",
       "score": 0,
-      "gameSate": [
+      "gameState": [
         [
           0,
           0,

@@ -4,7 +4,7 @@
       "id": "LysLD7EOHj6XSm_mAAAJ",
       "name": "TestPlayer",
       "score": 0,
-      "gameSate": [
+      "gameState": [
         [
           0,
           0,
@@ -253,7 +253,7 @@
       "id": "7aqR6wh6529A0WJ-AAAL",
       "name": "TestPlayer2",
       "score": 0,
-      "gameSate": [
+      "gameState": [
         [
           0,
           0,
@@ -502,7 +502,7 @@
       "id": "0a8rvriPr-kYsOmYAAAN",
       "name": "TestPlayer3",
       "score": 0,
-      "gameSate": [
+      "gameState": [
         [
           0,
           0,
@@ -751,7 +751,7 @@
       "id": "71usGs92RrJV-ADGAAAP",
       "name": "TestPlayer4",
       "score": 0,
-      "gameSate": [
+      "gameState": [
         [
           0,
           0,

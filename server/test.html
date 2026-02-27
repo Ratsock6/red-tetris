@@ -407,7 +407,7 @@
 					const currentPlayer = data.find(p => p.id === currentPlayerId);
 					
 					if (currentPlayer) {
-						displayGameBoard(currentPlayer.gameSate);
+						displayGameBoard(currentPlayer.gameState);
 						document.getElementById('playerScore').textContent = currentPlayer.score;
 						
 						// Update game status based on gameActive state
