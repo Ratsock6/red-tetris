@@ -60,7 +60,6 @@ export default function Room() {
 
           {!gameStarted && (
             <div>
-
               <button
                 onClick={startGame}
                 disabled={!isHost}
@@ -103,7 +102,7 @@ export default function Room() {
                 </p>
               </div>
 
-              <center><Board grid={currentPlayer.gameSate} /></center>
+              <center><Board grid={currentPlayer.gameSate} size={32} /></center>
             </div>
 
             <aside className="sidePanel">
@@ -117,7 +116,7 @@ export default function Room() {
                       <span style={{ fontSize: 13, opacity: 0.85 }}>Score: {p.score}</span>
                     </div>
                     <div style={{ marginTop: 8 }}>
-                      <Board grid={p.gameSate}/>
+                      <Board grid={p.gameSate} size={8} fog={true} />
                     </div>
                   </div>
                 ))}
@@ -128,71 +127,3 @@ export default function Room() {
       </div>
     );
 }
-
-
-/*
-export default function Room() {
-  const { room, pseudo } = useParams();
-
-  const players = useMemo(() => normalizePlayers(roomData), []);
-
-  const currentPlayer = useMemo(() => {
-    const found = players.find((p) => p?.name === pseudo);
-    return found || players[0] || null;
-  }, [players, pseudo]);
-
-  const grid = currentPlayer?.gameSate;
-  const score = currentPlayer?.score ?? -1;
-
-  
-
-  return (
-    <div className="room-page">
-      <header className="room-header">
-        <h1>Room : {room}</h1>
-        <p>
-          Player : <strong>{pseudo}</strong>
-        </p>
-      </header>
-
-      <main className="room-layout">
-        <h1>{roomData[0]?.name || "Unknown Room"}</h1>
-        
-        <aside className="sidebar">
-          <h2>Players</h2>
-          <ul className="player-list">
-            {players.map((p) => (
-              <li
-                key={p.id}
-                className={
-                  p.name === currentPlayer?.name ? "player active" : "player"
-                }
-              >
-                <span className="player-name">{pseudo}</span>
-                <span className="player-score"> {currentPlayer.score}</span>
-              </li>
-            ))}
-          </ul>
-        </aside>
-
-        <section className="board-section">
-          <h2>
-            Board — {currentPlayer?.name}
-          </h2>
-          <p className="score">Score : {currentPlayer.score}</p>
-
-          {Array.isArray(currentPlayer.gameSate) ? (
-            <div className="board-container">
-              <Board grid={currentPlayer.gameSate} />
-            </div>
-          ) : (
-            <p className="error">
-              Grid not found (expected field: <code>gameState</code>)
-            </p>
-          )}
-        </section>
-      </main>
-    </div>
-  );
-}
-*/
