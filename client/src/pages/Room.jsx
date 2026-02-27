@@ -12,18 +12,21 @@ function normalizePlayers(data) {
 
 export default function Room() {
   const { room, pseudo } = useParams();
-  const [gameStarted, setGameStarted] = useState(false);
 
   const players = useMemo(() => {
     return normalizePlayers(roomData);
   }, []);
+
 
   const currentPlayer = useMemo(() => {
     return players.find((p) => p.name === pseudo) ?? null;
   }, [players, pseudo]);
 
   const isHost = Boolean(currentPlayer?.isHost);
+  const isStarted = Boolean(currentPlayer?.gameActive);
 
+
+  const [gameStarted, setGameStarted] = useState(isStarted);
   const otherPlayers = useMemo(() => {
     return players.filter((p) => p.name !== pseudo);
   }, [players, pseudo]);
