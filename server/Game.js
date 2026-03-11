@@ -5,7 +5,7 @@ const GRAVITY_INTERVAL = 800; // milliseconds (0.8 second per line)
 class Game {
 	constructor(blockList = [], blockIndex = 0, onUpdate = null) {
 		this.board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-		this.active = true;
+		this.active = false;
 		this.score = 0;
 		this.blockList = blockList;
 		this.blockIndex = blockIndex;
