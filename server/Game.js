@@ -175,7 +175,6 @@ class Game {
 			this.placeBlock(this.currentBlock, this.currentPosition);
 		} else {
 			this.placeBlock(this.currentBlock, this.currentPosition);
-			this.lockBlock();
 		}
 
 		// Notifier les changements

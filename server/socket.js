@@ -106,6 +106,7 @@ export function initializeSocket(io, rooms) {
 				return;
 			}
 			if (currentRoom && player) {
+				currentRoom.gameStarted = true;
 				for (const p of currentRoom.players) {
 					p.game.startGravity();
 					console.log(`Game started for player ${socket.id}`);

@@ -405,11 +405,11 @@
 				if (data && data.length > 0) {
 					// Trouver le joueur courant dans la liste
 					const currentPlayer = data.find(p => p.id === currentPlayerId);
-					
+
 					if (currentPlayer) {
 						displayGameBoard(currentPlayer.gameState);
 						document.getElementById('playerScore').textContent = currentPlayer.score;
-						
+
 						// Update game status based on gameActive state
 						const gameStatus = document.getElementById('gameStatus');
 						if (currentPlayer.gameActive) {
@@ -420,7 +420,7 @@
 							gameStatus.style.color = '#ff4444';
 						}
 					}
-					
+
 					updatePlayersList(data);
 				}
 			});
@@ -460,8 +460,8 @@
 				addLog('Not connected to server', 'error');
 				return;
 			}
+			socket.emit('Gameinfo');
 
-			addLog('⚠️ Game info is now auto-synced via gameUpdate events', 'info');
 		}
 
 		function displayGameBoard(board) {

@@ -1,6 +1,7 @@
 import generateBlockList from './Block.js';
 class Room {
 	constructor(id) {
+		this.gameStarted = false;
 		this.id = id;
 		this.players = [];
 		this.max_players = 4;
@@ -40,7 +41,8 @@ class Room {
 			score: player.game.score,
 			gameState: player.game.GetBoard(),
 			gameActive: player.game.active,
-			isHost: player.isHost
+			isHost: player.isHost,
+			gameStarted: this.gameStarted
 		}));
 	}
 }
