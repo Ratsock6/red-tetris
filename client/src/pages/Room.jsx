@@ -239,7 +239,7 @@ export default function Room() {
                 </div>
 
                 <div style={{ marginTop: 8 }}>
-                  <Board grid={p.gameState} />
+                  <Board grid={p.gameState} size={8} fog={true} />
                 </div>
               </div>
             ))}
