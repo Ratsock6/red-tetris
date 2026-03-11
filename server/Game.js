@@ -117,7 +117,7 @@ class Game {
 	}
 
 	applyGravity() {
-		if (!this.active || !this.currentBlock || !this.currentPosition) return;
+		if (!this.currentBlock || !this.currentPosition) return;
 
 		this.clearBlock(this.currentBlock, this.currentPosition);
 
@@ -254,6 +254,7 @@ class Game {
 	}
 
 	startGravity() {
+		this.active = true;
 		if (this.gravityTimer) {
 			clearInterval(this.gravityTimer);
 		}
