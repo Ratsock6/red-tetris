@@ -9,15 +9,15 @@ export default defineConfig({
       react: path.resolve(__dirname, "node_modules/react"),
       "react/jsx-runtime": path.resolve(__dirname, "node_modules/react/jsx-runtime.js"),
       "react/jsx-dev-runtime": path.resolve(__dirname, "node_modules/react/jsx-dev-runtime.js"),
-
       "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
       "react-dom/client": path.resolve(__dirname, "node_modules/react-dom/client.js"),
       "react-dom/test-utils": path.resolve(__dirname, "node_modules/react-dom/test-utils.js"),
-
-      "react-router": path.resolve(__dirname, "node_modules/react-router"),
-      "react-router-dom": path.resolve(__dirname, "node_modules/react-router-dom"),
+      "@testing-library/react": path.resolve(
+        __dirname,
+        "node_modules/@testing-library/react"
+      ),
     },
-    dedupe: ["react", "react-dom", "react-router", "react-router-dom"],
+    dedupe: ["react", "react-dom"],
   },
   test: {
     globals: true,
@@ -29,8 +29,6 @@ export default defineConfig({
           "react",
           "react-dom",
           "react-dom/client",
-          "react-router",
-          "react-router-dom",
           "@testing-library/react",
         ],
       },
