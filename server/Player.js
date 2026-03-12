@@ -7,7 +7,7 @@ class Player {
 		this.blockIndex = 0;
 		this.score = 0;
 		this.onGameUpdate = onGameUpdate; // Callback pour les mises à jour du jeu
-		this.game = new Game(room ? room.blocklist : [], this.blockIndex, this.onGameUpdate);
+		this.game = new Game(room ? room.blocklist : [], this.blockIndex, this.onGameUpdate, this);
 		this.isHost = false;
 	}
 
@@ -17,8 +17,7 @@ class Player {
 
 	newGame() {
 		this.score = 0;
-		this.game = new Game(this.room ? this.room.blocklist : [], this.blockIndex, this.onGameUpdate);
-
+		this.game = new Game(this.room ? this.room.blocklist : [], this.blockIndex, this.onGameUpdate, this);
 	}
 
 }

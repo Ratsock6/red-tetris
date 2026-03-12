@@ -1,9 +1,10 @@
 const ROWS = 20;
 const COLS = 10;
 const GRAVITY_INTERVAL = 800; // milliseconds (0.8 second per line)
+const INDESTRUCTIBLE_LINE = -1; // Represents a penalty line
 
 class Game {
-	constructor(blockList = [], blockIndex = 0, onUpdate = null) {
+	constructor(blockList = [], blockIndex = 0, onUpdate = null, player = null) {
 		this.board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 		this.active = false;
 		this.score = 0;
@@ -14,6 +15,7 @@ class Game {
 		this.currentPosition = null;
 		this.gravityTimer = null;
 		this.onUpdate = onUpdate;
+		this.player = player;
 
 		if (blockList.length > 0) {
 			const block = blockList[blockIndex];
@@ -226,6 +228,10 @@ class Game {
 		this.currentPosition = null;
 
 		const linesCleared = this.handleFullLines();
+		if (linesCleared > 0) {
+			this.malus_other_player(linesCleared - 1);
+		}
+
 
 		if (this.active && this.blockIndex < this.blockList.length) {
 			this.blockIndex++;
@@ -267,6 +273,23 @@ class Game {
 		if (this.gravityTimer) {
 			clearInterval(this.gravityTimer);
 			this.gravityTimer = null;
+		}
+	}
+
+	malus_other_player(numberOfLines) {
+		if (!this.player || !this.player.room || numberOfLines <= 0) return;
+
+		const otherPlayers = this.player.room.players.filter(p => p.id !== this.player.id);
+
+		for (const otherPlayer of otherPlayers) {
+			otherPlayer.game.addPenaltyLines(numberOfLines);
+		}
+	}
+
+	addPenaltyLines(numberOfLines) {
+		for (let i = 0; i < numberOfLines; i++) {
+			this.board.splice(0, 1);
+			this.board.push(Array(COLS).fill(INDESTRUCTIBLE_LINE));
 		}
 	}
 
