@@ -74,6 +74,11 @@
   border: 1px solid #cbd5e1;
 }
 
+.cell.v8 {
+  background: #000000;
+  border: 1px solid #00000056;
+}
+
 
 .board {
   display: grid;

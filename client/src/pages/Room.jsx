@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useCallback, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import Board from "../components/Board";
 import { socket } from "../lib/socket";
 import "../styles/room.css";
+import { useNavigate } from "react-router-dom";
 
 export default function Room() {
   const { room, pseudo } = useParams();
@@ -84,8 +85,18 @@ export default function Room() {
     return players.filter((p) => p.id !== socketId);
   }, [players, socketId]);
 
+  const [showRanking, setShowRanking] = useState(false);
+
+  const alivePlayers = useMemo(() => {
+    return players.filter((p) => p.gameActive === true);
+  }, [players]);
+
+  const ranking = useMemo(() => {
+    return [...players].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  }, [players]);
+
   const isHost = Boolean(currentPlayer?.isHost);
-  const gameStarted = Boolean(currentPlayer?.gameActive);
+  const gameStarted = Boolean(currentPlayer?.gameStarted);
 
   useEffect(() => {
     if (!gameStarted) return;
@@ -152,6 +163,17 @@ export default function Room() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [gameStarted]);
 
+  useEffect(() => {
+    if (!gameStarted) {
+      setShowRanking(false);
+      return;
+    }
+
+    if (players.length > 0 && alivePlayers.length === 0) {
+      setShowRanking(true);
+    }
+  }, [gameStarted, players, alivePlayers]);
+
   const startGame = () => {
     if (!isHost) return;
     console.log("Starting game...");
@@ -172,11 +194,58 @@ export default function Room() {
     );
   }
 
-  socket.emit("Gameinfo", (gameInfo) => {
-    if (Array.isArray(gameInfo)) {
-      setPlayers(gameInfo);
-    }
-  });
+  const fetchGameInfo = useCallback(() => {
+    socket.emit("Gameinfo", (gameInfo) => {
+      if (Array.isArray(gameInfo)) {
+        setPlayers(gameInfo);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    fetchGameInfo();
+
+    const interval = setInterval(() => {
+      fetchGameInfo();
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [fetchGameInfo]);
+
+
+  const navigate = useNavigate();
+
+
+  if (showRanking) {
+    return (
+      <main style={{ padding: 24 }}>
+        <h1>Fin de partie</h1>
+        <h2>Classement</h2>
+
+        <ol style={{ paddingLeft: 20 }}>
+          {ranking.map((p, index) => (
+            <li key={p.id} style={{ marginBottom: 12 }}>
+              <strong>
+                #{index + 1} {p.name}
+              </strong>{" "}
+              — Score: {p.score ?? 0}
+              {p.id === socketId && <strong> (You)</strong>}
+              {p.isHost && <strong> (Host)</strong>}
+            </li>
+          ))}
+        </ol>
+
+        <button
+          onClick={() => {
+            setShowRanking(false);
+            navigate("/");
+          }}
+        >
+          Retour au menu
+        </button>
+      </main>
+    );
+  }
 
   if (!currentPlayer) {
     return (
@@ -235,11 +304,15 @@ export default function Room() {
               <div key={p.id} style={{ marginBottom: 14 }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <strong>{p.name}</strong>
-                  <span>Score: {p.score ?? 0}</span>
+                  <span>
+                    Score: {p.score ?? 0}
+                    {p.gameActive === false && " (mort)"}
+                  </span>
+
                 </div>
 
                 <div style={{ marginTop: 8 }}>
-                  <Board grid={p.gameState} size={8} fog={true} />
+                  <Board grid={p.gameState} size={8} fog={true} dead={p.gameActive === true} />
                 </div>
               </div>
             ))}

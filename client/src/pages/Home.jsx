@@ -8,8 +8,6 @@ export default function Home() {
     const [pseudo, setPseudo] = useState("");
     const [room, setRoom] = useState("");
 
-    const isDisabled = !pseudo || !room;
-
     const navigate = useNavigate();
 
     const isValid = isAlphaNum(pseudo) && isAlphaNum(room);
