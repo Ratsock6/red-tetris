@@ -3,6 +3,7 @@ const COLS = 10;
 const GRAVITY_INTERVAL = 800; // milliseconds (0.8 second per line)
 const INDESTRUCTIBLE_LINE = -1; // Represents a penalty line
 
+
 class Game {
 	constructor(blockList = [], blockIndex = 0, onUpdate = null, player = null) {
 		this.board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
@@ -47,8 +48,11 @@ class Game {
 		}
 	}
 	handleFullLines() {
+
 		let linesCleared = 0;
 		for (let r = ROWS - 1; r >= 0; r--) {
+			if (this.board[r].every(cell => cell == -1))
+				continue
 			if (this.board[r].every(cell => cell !== 0)) {
 				this.board.splice(r, 1);
 				this.board.unshift(Array(COLS).fill(0));

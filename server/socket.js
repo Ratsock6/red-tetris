@@ -1,61 +1,90 @@
 import Player from './Player.js';
 import Room from './Room.js';
 
-
 export function initializeSocket(io, rooms) {
 	io.on('connection', (socket) => {
 		console.log(socket.id, ' connected');
+
 		let player = null;
 		let currentRoom = null;
+		let playerName = null;
 
-		socket.on('setPlayerName', (playerName) => {
-			console.log('Player Name:', playerName);
-			player = new Player(socket.id, playerName, null, null);
-		});
-
-		socket.on('disconnect', () => {
-			rooms.forEach((room) => {
-				room.removePlayer(socket.id);
-				if (room.players.length === 0) {
-					rooms.delete(room.id);
-					console.log(`Room ${room.id} deleted as it became empty.`);
-				}
-			});
-			console.log(socket.id, ' disconnected');
+		// Set player name first
+		socket.on('setPlayerName', (name) => {
+			console.log('Player Name:', name);
+			playerName = name;
 		});
 
 		socket.on('joinRoom', (roomId) => {
+			if (!playerName) {
+				socket.emit('error', 'Player name not set');
+				return;
+			}
+
 			let room;
+
 			if (rooms.has(roomId)) {
 				room = rooms.get(roomId);
 			} else {
 				room = new Room(roomId);
+				room.gameStarted = false;
 				rooms.set(roomId, room);
+				console.log("New room created:", roomId);
 			}
+
 			const onGameUpdate = () => {
 				if (currentRoom && player) {
 					const gameInfo = currentRoom.Get_all_players_info();
 					io.to(roomId).emit('gameUpdate', gameInfo);
 				}
 			};
-			player = new Player(socket.id, player.name, room, onGameUpdate);
-			if (room.addPlayer(player)) {
+
+			player = new Player(socket.id, playerName, room, onGameUpdate);
+
+			const result = room.addPlayer(player);
+
+			if (result === "Player added") {
 				currentRoom = room;
 				socket.join(roomId);
+
 				console.log(`Player ${socket.id} joined room ${roomId}`);
-				player.game.printBoard();
+
+				if (player.game) {
+					player.game.printBoard();
+				}
+
 				socket.emit('joinedRoom', roomId);
 			} else {
 				socket.emit('roomFull', roomId);
-				console.log(`Room ${roomId} is full. Player ${socket.id} could not join.`);
+				console.log(`Room ${roomId} join failed: ${result}`);
 			}
 		});
-		//game events
+
+		socket.on('disconnect', () => {
+			console.log(socket.id, ' disconnected');
+
+			if (currentRoom) {
+				currentRoom.removePlayer(socket.id);
+
+				// Clean empty room
+				if (currentRoom.players.length === 0) {
+					rooms.delete(currentRoom.id);
+					console.log(`Room ${currentRoom.id} deleted as it became empty.`);
+				}
+			}
+
+			currentRoom = null;
+			player = null;
+
+			socket.leaveAll();
+		});
+
+		// ---------------- GAME EVENTS ----------------
+
 		socket.on('Gameinfo', (callback) => {
-			console.log('Game info requested');
 			if (currentRoom) {
 				const gameInfo = currentRoom.Get_all_players_info();
-				console.log('Game info sent:', gameInfo);
+
 				if (typeof callback === 'function') {
 					callback(gameInfo);
 				} else {
@@ -63,72 +92,73 @@ export function initializeSocket(io, rooms) {
 				}
 			}
 		});
-		// -1 : left, 1: right
-		socket.on('moveBlock', (direction) => {
-			if (!player.game.active) return;
-			if (currentRoom && player) {
-				player.game.moveBlock(direction);
-				console.log(`Player ${socket.id} moved block ${direction}`);
-			}
-		});
-		socket.on('hardDrop', () => {
-			if (!player.game.active) return;
 
-			if (currentRoom && player) {
-				player.game.hardDrop();
-				console.log(`Player ${socket.id} performed hard drop`);
-			}
+		socket.on('moveBlock', (direction) => {
+			if (!player || !player.game || !player.game.active) return;
+
+			player.game.moveBlock(direction);
 		});
+
+		socket.on('hardDrop', () => {
+			if (!player || !player.game || !player.game.active) return;
+
+			player.game.hardDrop();
+		});
+
 		socket.on('dropBlock', () => {
-			if (!player.game.active) return;
-			if (currentRoom && player) {
-				player.game.applyGravity();
-				console.log(`Player ${socket.id} dropped block`);
-			}
+			if (!player || !player.game || !player.game.active) return;
+
+			player.game.applyGravity();
 		});
 
 		socket.on('RotateBlock', (direction) => {
+			if (!player || !player.game || !player.game.active) return;
 
-			if (!player.game.active) return;
-			if (currentRoom && player) {
-				player.game.rotateBlock(direction);
-				console.log(`Player ${socket.id} rotated block ${direction}`);
-			}
+			player.game.rotateBlock(direction);
 		});
 
-		// Start the game and gravity loop
+		// ---------------- GAME CONTROL ----------------
+
 		socket.on('startGame', () => {
-			console.log(`Player ${socket.id} requested to start the game.`);
+			if (!player) return;
+
 			if (player.game.active) return;
+
 			if (!player.isHost) {
-				console.log(`Player ${socket.id} is not the host and cannot start the game.`);
 				socket.emit('notHost');
 				return;
 			}
-			if (currentRoom && player) {
+
+			if (currentRoom) {
 				currentRoom.gameStarted = true;
+
 				for (const p of currentRoom.players) {
 					p.game.startGravity();
-					console.log(`Game started for player ${socket.id}`);
-					socket.emit('gameStarted');
 				}
+
+				io.to(currentRoom.id).emit('gameStarted');
+				console.log(`Game started in room ${currentRoom.id}`);
 			}
 		});
 
-		// Stop the game and gravity loop
 		socket.on('stopGame', () => {
-			console.log(currentRoom.players);
+			if (!player) return;
+
 			if (!player.isHost) {
-				console.log(`Player ${socket.id} is not the host and cannot stop the game.`);
 				socket.emit('notHost');
 				return;
 			}
 
-			for (const p of currentRoom.players) {
-				p.game.active = false;
-				p.game.stopGravity();
-				console.log(`Game stopped for player ${p.name}`);
-				socket.emit('gameStopped');
+			if (currentRoom) {
+				for (const p of currentRoom.players) {
+					p.game.active = false;
+					p.game.stopGravity();
+				}
+
+				currentRoom.gameStarted = false;
+
+				io.to(currentRoom.id).emit('gameStopped');
+				console.log(`Game stopped in room ${currentRoom.id}`);
 			}
 		});
 	});
